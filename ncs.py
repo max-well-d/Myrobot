@@ -1,4 +1,5 @@
 #nc
+#copy from:https://github.com/cczu-osa/aki/blob/master/aki/plugins/subscribe.py
 import asyncio
 import re
 import string
