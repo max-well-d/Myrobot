@@ -59,7 +59,10 @@ async def startclock(session: CommandSession):
                     minute = msg.partition(":")[2]
                     print("add a job at"+hour+":"+minute + " msg:"+key+ "to:"+ID)
                     print("code="+code)
-                    scheduler.add_job(func=perform_command,args=(botmsg,1,ID,num),trigger='cron',hour=hour, minute=minute,id=ID+":"+code)
+                    try:
+                        scheduler.add_job(func=perform_command,args=(botmsg,1,ID,num),trigger='cron',hour=hour, minute=minute,id=ID+":"+code)
+                    except:
+                        print("本任务已添加或无法添加")
 
     for ID,_list in r_dict_g.items():
         for num,_dict in enumerate(_list):
@@ -69,11 +72,14 @@ async def startclock(session: CommandSession):
                     minute = msg.partition(":")[2]
                     print("add a job at"+hour+":"+minute + " msg:"+key+ "to:"+ID)
                     print("code="+code)
-                    scheduler.add_job(func=perform_command,args=(botmsg,0,ID,num),trigger='cron',hour=hour, minute=minute,id=ID+":"+code)
+                    try:
+                        scheduler.add_job(func=perform_command,args=(botmsg,1,ID,num),trigger='cron',hour=hour, minute=minute,id=ID+":"+code)
+                    except:
+                        print("本任务已添加或无法添加")
     try:
         scheduler.start()
     except:
-        print("时钟已经启动")
+        print("所有时钟已经启动")
     finally:
         await session.send("所有定时已启动")
 
@@ -105,7 +111,17 @@ async def setclock(session: CommandSession):
     hour = session.args["time"].partition(":")[0]
     minute = session.args["time"].partition(":")[2]
     print("add a job at"+hour+":"+minute + " msg:"+session.args["what"]+ "to:"+ID)
-    scheduler.add_job(func=perform_command,args=(botmsg,is_private,ID,which),trigger='cron',hour=hour, minute=minute,id=ID+":"+code)
+    try:
+        scheduler.add_job(func=perform_command,args=(botmsg,is_private,ID,which),trigger='cron',hour=hour, minute=minute,id=ID+":"+code)
+    except:
+        print("非法数据！")
+        if is_private == 0:
+            del r_dict_g[str(session.ctx["group_id"])][which]
+            save_g(r_dict_g)
+        else:
+            del r_dict_p[str(session.ctx["user_id"])][which]
+            save_p(r_dict_p)
+        session.finish("发生错误，添加失败,请重新添加!")
     await session.send("定时开始！")
 
 
@@ -135,8 +151,12 @@ async def delclock(session: CommandSession):
             for msg,coded in r_dict_g[str(session.ctx["group_id"])][int(num)-1].items():
                 for code in coded.values():
                     del r_dict_g[str(session.ctx["group_id"])][int(num)-1]
-                    scheduler.remove_job(str(session.ctx["group_id"])+":"+code)
-                    await session.send("成功删除！")
+                    try:
+                        scheduler.remove_job(str(session.ctx["group_id"])+":"+code)
+                        await session.send("成功删除！")
+                    except:
+                        await session.send("此定时任务没有在运行，但已从计划中删除")
+                    
                     save_g(r_dict_g)
             
         else:await session.send("你还没有定时任务")
@@ -145,7 +165,10 @@ async def delclock(session: CommandSession):
         for msg,coded in r_dict_p[str(session.ctx["user_id"])][int(num)-1].items():
             for code in coded.values():
                 del r_dict_p[str(session.ctx["user_id"])][int(num)-1]
-                scheduler.remove_job(str(session.ctx["user_id"])+":"+code)
+                try:
+                    scheduler.remove_job(str(session.ctx["user_id"])+":"+code)
+                except:
+                    await session.send("此定时任务没有在运行，但已从计划中删除")
                 await session.send("成功删除！")
                 save_p(r_dict_p)
     else:await session.send("你还没有定时任务")
