@@ -12,10 +12,10 @@ async def openfd(session: CommandSession):
     msgtype = session.ctx["message_type"]
     session.get("quan", prompt="请输入复读概率1~100")#, arg_filters=[between_inclusive(start=1, end=100, message="范围或格式错误")])
     if session.args["quan"].isdigit() :
-        if int(session.args["quan"]) < 1 or int(session.args["quan"]) > 100:
-            await session.finish("输入范围有误，复读失败") 
+        if int(session.args["quan"])<1 or int(session.args["quan"])>100 :
+            await session.pause("输入范围有误，请重新输入")
     else :
-        await session.finish("输入的不是数字，复读失败")
+        await session.pause("输入的不是数字，请重新输入")
     await session.send("复读开始")
     quanzhi = int(session.args["quan"])
     if msgtype == "group" or msgtype == "discuss":
@@ -27,13 +27,6 @@ async def openfd(session: CommandSession):
 @openfd.args_parser
 async def _(session:CommandSession):
     stripped_arg = session.current_arg_text.strip()
-    if  stripped_arg != "" :
-        if stripped_arg.isdigit() :
-            if int(stripped_arg) < 1 or int(stripped_arg) > 100:
-                await session.finish("输入范围有误，复读失败") 
-        else :
-            await session.finish("输入的不是数字，复读失败")
-
     if stripped_arg:
         session.args["quan"] = stripped_arg
 

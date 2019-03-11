@@ -4,7 +4,7 @@ import requests
 from os import path
 import pickle
 recorddict = {}
-@on_command("recordsearch", aliases=("查战绩"), only_to_me=False)
+@on_command("recordsearch", aliases=("查战绩",), only_to_me=False)
 async def zhanji(session: CommandSession):
     ID=session.get("ID", prompt="请输入您的账号名")
     zhanji = await chazhanji(ID)
@@ -85,7 +85,7 @@ async def chazhanji(ID: str) -> str:
         rank = "铂金"+str(3-(rankmath-17))
     elif rankmath ==20:        
         rank = "钻石"   
-    winrate = round(won/(won+lost),3)
+    winrate = round(won/(lost),3)
     deathrate = round(kills/deaths,3)
     headshotrate = round(headshot/kills,3)
 
